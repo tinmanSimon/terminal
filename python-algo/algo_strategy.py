@@ -48,6 +48,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.attack=False
         self.last_enemy_health=30
         self.did_not_hurt=False
+        self.destructor_locations=[]
+        self.cores=45
 
     def on_turn(self, turn_state):
         """
@@ -61,10 +63,10 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
-        if self.did_not_hurt:
+        if self.did_not_hurt and not self.transition:
             self.attack_right=not self.attack_right
             self.transition=True
-        else:
+        elif not self.transition:
             self.transition=False
         self.did_not_hurt=False
 
@@ -152,8 +154,8 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         # Get breech locations
         for location in self.scored_on_locations:
-            if location[1]<6:
-                location[1]+=6
+            while location[1]<9:
+                location[1]+=3
 
             # Build destructor one space above so that it doesn't block our own edge spawn locations
             self.fortify_destructor_locations.append([location[0], location[1]])
@@ -202,6 +204,48 @@ class AlgoStrategy(gamelib.AlgoCore):
                 game_state.attempt_spawn(ENCRYPTOR, attack_left_encryptor_locations)
             game_state.attempt_remove(attack_right_encryptor_locations)
 
+        # Spawn extra destructors near our current destructors
+        size=len(self.destructor_locations)
+        while(self.cores>=30 and len(self.destructor_locations)):
+            index=random.randint(0,size-1)
+            location=self.get_location_near(game_state, self.destructor_locations[index])
+            if location:
+                game_state.attempt_spawn(DESTRUCTOR, location)
+            else:
+                left=self.destructor_locations[:index]
+                right=self.destructor_locations[index+1:]
+                self.destructor_locations=left+right
+                size = len(self.destructor_locations)
+
+
+    def get_location_near(self, game_state, location):
+        if (game_state.can_spawn(DESTRUCTOR, [location[0], location[1]+1])):
+            if (location[1]>=9):
+                return [location[0],location[1]+1]
+        if (game_state.can_spawn(DESTRUCTOR, [location[0], location[1]-1])):
+            if (location[1] >= 9):
+                return [location[0],location[1]-1]
+        if (game_state.can_spawn(DESTRUCTOR, [location[0]+1, location[1]])):
+            if (location[1] >= 9):
+                return [location[0]+1,location[1]]
+        if (game_state.can_spawn(DESTRUCTOR, [location[0]-1, location[1]])):
+            if (location[1] >= 9):
+                return [location[0]-1,location[1]]
+        if (game_state.can_spawn(DESTRUCTOR, [location[0]+1, location[1]+1])):
+            if (location[1] >= 9):
+                return [location[0]+1,location[1]+1]
+        if (game_state.can_spawn(DESTRUCTOR, [location[0]-1, location[1]+1])):
+            if (location[1] >= 9):
+                return [location[0]-1,location[1]+1]
+        if (game_state.can_spawn(DESTRUCTOR, [location[0]+1, location[1]-1])):
+            if (location[1] >= 9):
+                return [location[0]+1,location[1]-1]
+        if (game_state.can_spawn(DESTRUCTOR, [location[0]-1, location[1]-1])):
+            if (location[1] >= 9):
+                return [location[0]-1,location[1]-1]
+
+        # Destructor cannot be placed near
+        return None
 
     def stall_with_scramblers(self, game_state):
         """
@@ -295,6 +339,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         events = state["events"]
         breaches = events["breach"]
         enemy_health = state["p2Stats"]
+        self.destructor_locations=state["p1Units"][2]
+        self.cores=state["p1Stats"][1]
 
         if enemy_health[0]==self.last_enemy_health:
             self.did_not_hurt=True
