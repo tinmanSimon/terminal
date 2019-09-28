@@ -158,12 +158,15 @@ class AlgoStrategy(gamelib.AlgoCore):
             # Build destructor one space above so that it doesn't block our own edge spawn locations
             self.fortify_destructor_locations.append([location[0], location[1]])
             self.fortify_filter_locations.append([location[0], location[1] + 1])
+            self.fortify_destructor_locations.append([location[0], location[1] - 1])
             if location[0]<=13:
                 self.fortify_destructor_locations.append([location[0]+1, location[1]])
                 self.fortify_filter_locations.append([location[0]+1, location[1] + 1])
+                self.fortify_destructor_locations.append([location[0]+1, location[1]-1])
             else:
                 self.fortify_destructor_locations.append([location[0] - 1, location[1]])
                 self.fortify_filter_locations.append([location[0]-1, location[1] + 1])
+                self.fortify_destructor_locations.append([location[0]-1, location[1]-1])
 
         # Spawn destructors
         for location in self.fortify_destructor_locations:
