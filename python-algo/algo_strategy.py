@@ -82,6 +82,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.did_not_hurt=True
         else:
             self.last_enemy_health=enemy_health[0]
+            self.did_not_hurt=False
 
         self.starter_strategy(game_state)
 
@@ -230,28 +231,28 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def get_location_near(self, game_state, location):
         if (game_state.can_spawn(DESTRUCTOR, [location[0], location[1]+1])):
-            if (location[1]>=9):
+            if (location[1]>9 and (location!=[17,9] or location!=[10,9])):
                 return [location[0],location[1]+1]
         if (game_state.can_spawn(DESTRUCTOR, [location[0], location[1]-1])):
-            if (location[1] >= 9):
+            if (location[1] > 9 and (location!=[17,9] or location!=[10,9])):
                 return [location[0],location[1]-1]
         if (game_state.can_spawn(DESTRUCTOR, [location[0]+1, location[1]])):
-            if (location[1] >= 9):
+            if (location[1] > 9 and (location!=[17,9] or location!=[10,9])):
                 return [location[0]+1,location[1]]
         if (game_state.can_spawn(DESTRUCTOR, [location[0]-1, location[1]])):
-            if (location[1] >= 9):
+            if (location[1] > 9 and (location!=[17,9] or location!=[10,9])):
                 return [location[0]-1,location[1]]
         if (game_state.can_spawn(DESTRUCTOR, [location[0]+1, location[1]+1])):
-            if (location[1] >= 9):
+            if (location[1] > 9 and (location!=[17,9] or location!=[10,9])):
                 return [location[0]+1,location[1]+1]
         if (game_state.can_spawn(DESTRUCTOR, [location[0]-1, location[1]+1])):
-            if (location[1] >= 9):
+            if (location[1] > 9 and (location!=[17,9] or location!=[10,9])):
                 return [location[0]-1,location[1]+1]
         if (game_state.can_spawn(DESTRUCTOR, [location[0]+1, location[1]-1])):
-            if (location[1] >= 9):
+            if (location[1] > 9 and (location!=[17,9] or location!=[10,9])):
                 return [location[0]+1,location[1]-1]
         if (game_state.can_spawn(DESTRUCTOR, [location[0]-1, location[1]-1])):
-            if (location[1] >= 9):
+            if (location[1] > 9 and (location!=[17,9] or location!=[10,9])):
                 return [location[0]-1,location[1]-1]
 
         # Destructor cannot be placed near
