@@ -132,8 +132,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             game_state.attempt_spawn(FILTER, filter_location)
 
         bonus_encryptor_locations = [[16, 2], [14, 2], [14, 1], [15, 2], [15, 1]]
-        attack_right_encryptor_locations = [[14,3],[15, 9], [16, 9], [16, 10], [17, 10], [17, 11], [18, 11], [18, 8], [19, 8],
-                                            [19, 9], [19, 10], [20, 10], [21, 10],[14,2],[15,3]]
+        attack_right_encryptor_locations = [[14,3],[10,4],[10,5],[13,6],[12,6],[15, 9], [16, 9], [16, 10], [17, 10],
+                                            [17, 11], [18, 11], [18, 8], [19, 8],
+                                            [19, 9], [20,9], [20, 10], [21, 10],[14,2],[15,3]]
         game_state.attempt_spawn(ENCRYPTOR, attack_right_encryptor_locations)
 
 
