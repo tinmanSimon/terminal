@@ -41,7 +41,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         SCRAMBLER = config["unitInformation"][5]["shorthand"]
         # This is a good place to do initial setup
         self.scored_on_locations = []
-
+        self.fortify_destructor_locations=[]
+        self.fortify_filter_locations=[]
+        self.attack_right=True
 
 
 
@@ -124,18 +126,34 @@ class AlgoStrategy(gamelib.AlgoCore):
         as shown in the on_action_frame function
         """
 
+        # Get breech locations
         for location in self.scored_on_locations:
             # Build destructor one space above so that it doesn't block our own edge spawn locations
-            build_location = [location[0], location[1] + 1]
-            game_state.attempt_spawn(DESTRUCTOR, build_location)
-            filter_location = [location[0], location[1] + 2]
-            game_state.attempt_spawn(FILTER, filter_location)
+            self.fortify_destructor_locations.append([location[0], location[1]])
+            self.fortify_destructor_locations.append([location[0]-1, location[1]])
+            self.fortify_destructor_locations.append([location[0]+1, location[1]])
+            self.fortify_filter_locations.append([location[0], location[1] + 1])
+            self.fortify_filter_locations.append([location[0]-1, location[1] + 1])
+            self.fortify_filter_locations.append([location[0]+1, location[1] + 1])
 
-        bonus_encryptor_locations = [[16, 2], [14, 2], [14, 1], [15, 2], [15, 1]]
-        attack_right_encryptor_locations = [[14,3],[10,4],[10,5],[13,6],[12,6],[15, 9], [16, 9], [16, 10], [17, 10],
-                                            [17, 11], [18, 11], [18, 8], [19, 8],
-                                            [19, 9], [20,9], [20, 10], [21, 10],[14,2],[15,3]]
-        game_state.attempt_spawn(ENCRYPTOR, attack_right_encryptor_locations)
+        # Spawn destructors
+        for location in self.fortify_destructor_locations:
+            if game_state.can_spawn(DESTRUCTOR, location):
+                game_state.attempt_spawn(DESTRUCTOR, location)
+                self.fortify_destructor_locations.remove(location)
+
+        # Spawn filters
+        for location in self.fortify_filter_locations:
+            if game_state.can_spawn(FILTER, location):
+                game_state.attempt_spawn(FILTER, location)
+                self.fortify_filter_locations.remove(location)
+
+        if self.attack_right:
+            attack_right_encryptor_locations = [[14,3],[10,4],[10,5],[13,6],[12,6],[15, 9], [16, 9], [16, 10], [17, 10],
+                                                [17, 11], [18, 11], [18, 8], [19, 8],
+                                                [19, 9], [20,9], [20, 10], [21, 10],[14,2],[15,3]]
+            game_state.attempt_spawn(ENCRYPTOR, attack_right_encryptor_locations)
+
 
 
     def stall_with_scramblers(self, game_state):
