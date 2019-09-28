@@ -21,7 +21,7 @@ Advanced strategy tips:
 
 class AlgoStrategy(gamelib.AlgoCore):
     def __init__(self):
-        super().__init__()
+        super.__init__()
         seed = random.randrange(maxsize)
         random.seed(seed)
         gamelib.debug_write('Random seed: {}'.format(seed))
