@@ -44,6 +44,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.fortify_destructor_locations=[]
         self.fortify_filter_locations=[]
         self.attack_right=True
+        self.transition=False
+        self.attack=False
 
 
 
@@ -59,9 +61,25 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
+        if game_state.turn_number%10 <=4:
+            self.attack_right=False
+        else:
+            self.attack_right=True
+
+        if game_state.turn_number%10==0 or game_state.turn_number%10==5:
+            self.transition=True
+        else:
+            self.transition=False
+
+        if game_state.turn_number%2==0:
+            self.attack=True
+        else:
+            self.attack=False
+
         self.starter_strategy(game_state)
 
         game_state.submit_turn()
+
 
 
     """
@@ -115,9 +133,18 @@ class AlgoStrategy(gamelib.AlgoCore):
         '''
         We simply spawn a bunch of pings on a route that passes through encryptors
         '''
-        rush_location = [10, 3]
-        while game_state.can_spawn(PING, rush_location):
-            game_state.attempt_spawn(PING, rush_location)
+        if self.attack_right and not self.transition:
+            rush_location = [10, 3]
+        elif self.attack_right:
+            rush_location = [17, 3]
+        elif self.transition:
+            rush_location = [10, 3]
+        else:
+            rush_location = [17,3]
+
+        if self.attack:
+            while game_state.can_spawn(PING, rush_location):
+                game_state.attempt_spawn(PING, rush_location)
 
     def build_reactive_defense(self, game_state):
         """
@@ -148,12 +175,25 @@ class AlgoStrategy(gamelib.AlgoCore):
                 game_state.attempt_spawn(FILTER, location)
                 self.fortify_filter_locations.remove(location)
 
-        if self.attack_right:
-            attack_right_encryptor_locations = [[14,3],[10,4],[10,5],[13,6],[12,6],[15, 9], [16, 9], [16, 10], [17, 10],
-                                                [17, 11], [18, 11], [18, 8], [19, 8],
-                                                [19, 9], [20,9], [20, 10], [21, 10],[14,2],[15,3]]
-            game_state.attempt_spawn(ENCRYPTOR, attack_right_encryptor_locations)
+        # Define encryptor spawn locations for either attack direction
+        attack_right_encryptor_locations = [[14, 3], [10, 4], [10, 5], [13, 6], [12, 6], [15, 9], [16, 9], [16, 10],
+                                            [17, 10],
+                                            [17, 11], [18, 11], [18, 8], [19, 8],
+                                            [19, 9], [20, 9], [20, 10], [21, 10], [14, 2], [15, 3]]
+        attack_left_encryptor_locations = [[13, 3], [17, 4], [17, 5], [14, 6], [15, 6], [12, 9], [11, 9], [11, 10],
+                                            [10, 10],
+                                            [10, 11], [9, 11], [9, 8], [8, 8],
+                                            [8, 9], [7, 9], [7, 10], [6, 10], [13, 2], [12, 3]]
 
+        # Spawn encryptors
+        if self.attack_right:
+            if not self.transition:
+                game_state.attempt_spawn(ENCRYPTOR, attack_right_encryptor_locations)
+            game_state.attempt_remove(attack_left_encryptor_locations)
+        else:
+            if not self.transition:
+                game_state.attempt_spawn(ENCRYPTOR, attack_left_encryptor_locations)
+            game_state.attempt_remove(attack_right_encryptor_locations)
 
 
     def stall_with_scramblers(self, game_state):
