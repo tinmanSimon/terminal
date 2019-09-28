@@ -70,10 +70,18 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.transition=False
         self.did_not_hurt=False
 
+
         if game_state.turn_number%2==0:
             self.attack=True
         else:
             self.attack=False
+
+        state = json.loads(turn_state)
+        enemy_health = state["p2Stats"]
+        if enemy_health[0]==self.last_enemy_health:
+            self.did_not_hurt=True
+        else:
+            self.last_enemy_health=enemy_health[0]
 
         self.starter_strategy(game_state)
 
@@ -141,6 +149,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         else:
             rush_location = [17,3]
 
+        self.transition=False
+
         if self.attack:
             while game_state.can_spawn(PING, rush_location):
                 game_state.attempt_spawn(PING, rush_location)
@@ -185,12 +195,12 @@ class AlgoStrategy(gamelib.AlgoCore):
         # Define encryptor spawn locations for either attack direction
         attack_right_encryptor_locations = [[14, 3], [10, 4], [10, 5], [13, 6], [12, 6], [15, 9], [16, 9], [16, 10],
                                             [17, 10],
-                                            [17, 11], [18, 11], [18, 8], [19, 8],
+                                            [17, 11], [18, 8], [19, 8],
                                             [19, 9], [20, 9], [20, 10], [21, 10], [15, 3],
                                             [11, 2], [12, 2], [12, 1], [13, 1]]
         attack_left_encryptor_locations = [[13, 3], [17, 4], [17, 5], [14, 6], [15, 6], [12, 9], [11, 9], [11, 10],
                                             [10, 10],
-                                            [10, 11], [9, 11], [9, 8], [8, 8],
+                                            [10, 11], [9, 8], [8, 8],
                                             [8, 9], [7, 9], [7, 10], [6, 10], [12, 3],
                                             [16, 2], [15, 2], [15, 1], [14, 1]]
 
@@ -206,7 +216,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         # Spawn extra destructors near our current destructors
         size=len(self.destructor_locations)
-        while(self.cores>=30 and len(self.destructor_locations)):
+        while(self.cores>=2 and len(self.destructor_locations)):
             index=random.randint(0,size-1)
             location=self.get_location_near(game_state, self.destructor_locations[index])
             if location:
@@ -338,14 +348,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         state = json.loads(turn_string)
         events = state["events"]
         breaches = events["breach"]
-        enemy_health = state["p2Stats"]
         self.destructor_locations=state["p1Units"][2]
         self.cores=state["p1Stats"][1]
 
-        if enemy_health[0]==self.last_enemy_health:
-            self.did_not_hurt=True
-        else:
-            self.last_enemy_health=enemy_health[0]
 
         for breach in breaches:
             location = breach[0]
