@@ -114,7 +114,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         # More community tools available at: https://terminal.c1games.com/rules#Download
 
         # Place destructors that attack enemy units
-        initial_destructor_locations = [[3, 12], [6, 12], [9, 12], [12, 12], [15, 12], [18, 12], [21, 12], [24, 12]]
+        initial_destructor_locations = [[3, 11], [6, 11], [9, 11], [12, 11], [15, 11], [18, 11], [21, 11], [24, 11]]
 
         # attempt_spawn will try to spawn units if we have resources, and will check if a blocking unit is already there
         game_state.attempt_spawn(DESTRUCTOR, initial_destructor_locations)
@@ -125,7 +125,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         initial_encrypter_locations = [[11, 5], [12, 5], [11, 4], [12, 4], [9, 7], [10, 7], [9, 6], [10, 6],
                                        [15, 5], [15, 4], [16, 5], [16, 4], [12, 8], [12, 7], [13, 8], [13, 7],
                                        [14, 8], [14, 7], [15, 8], [15, 7], [15, 5], [15, 4], [16, 5], [16, 4],
-                                       [17, 7], [17, 6], [18, 7], [18, 6], [11, 2], [12, 2], [12, 1], [13, 2], [13, 1]]
+                                       [17, 7], [17, 6], [18, 7], [18, 6]]
         game_state.attempt_spawn(ENCRYPTOR, initial_encrypter_locations)
 
 
@@ -157,11 +157,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         for location in self.scored_on_locations:
             # Build destructor one space above so that it doesn't block our own edge spawn locations
             self.fortify_destructor_locations.append([location[0], location[1]])
-            self.fortify_destructor_locations.append([location[0]-1, location[1]])
-            self.fortify_destructor_locations.append([location[0]+1, location[1]])
             self.fortify_filter_locations.append([location[0], location[1] + 1])
-            self.fortify_filter_locations.append([location[0]-1, location[1] + 1])
-            self.fortify_filter_locations.append([location[0]+1, location[1] + 1])
+            if location[0]<=13:
+                self.fortify_destructor_locations.append([location[0]+1, location[1]])
+                self.fortify_filter_locations.append([location[0]+1, location[1] + 1])
+            else:
+                self.fortify_destructor_locations.append([location[0] - 1, location[1]])
+                self.fortify_filter_locations.append([location[0]-1, location[1] + 1])
 
         # Spawn destructors
         for location in self.fortify_destructor_locations:
@@ -179,11 +181,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         attack_right_encryptor_locations = [[14, 3], [10, 4], [10, 5], [13, 6], [12, 6], [15, 9], [16, 9], [16, 10],
                                             [17, 10],
                                             [17, 11], [18, 11], [18, 8], [19, 8],
-                                            [19, 9], [20, 9], [20, 10], [21, 10], [14, 2], [15, 3]]
+                                            [19, 9], [20, 9], [20, 10], [21, 10], [14, 2], [15, 3],
+                                            [11, 2], [12, 2], [12, 1], [13, 2], [13, 1]]
         attack_left_encryptor_locations = [[13, 3], [17, 4], [17, 5], [14, 6], [15, 6], [12, 9], [11, 9], [11, 10],
                                             [10, 10],
                                             [10, 11], [9, 11], [9, 8], [8, 8],
-                                            [8, 9], [7, 9], [7, 10], [6, 10], [13, 2], [12, 3]]
+                                            [8, 9], [7, 9], [7, 10], [6, 10], [13, 2], [12, 3],
+                                            [16, 2], [15, 2], [15, 1], [14, 2], [14, 1]]
 
         # Spawn encryptors
         if self.attack_right:
