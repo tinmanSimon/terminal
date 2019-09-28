@@ -98,6 +98,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.build_defences(game_state)
         # Now build reactive defenses based on where the enemy scored
         self.build_reactive_defense(game_state)
+        
+        self.build_auxiliary_defense(game_state)
 
         # Attack
         self.ping_rush(game_state)
@@ -142,6 +144,46 @@ class AlgoStrategy(gamelib.AlgoCore):
         if self.attack:
             while game_state.can_spawn(PING, rush_location):
                 game_state.attempt_spawn(PING, rush_location)
+
+    def build_auxiliary_defense(self, game_state):
+        cols = [12,15,9,18,6,21,3,24]
+        for col in cols:
+            location = [col, 10]
+            if game_state.can_spawn(DESTRUCTOR, location):
+                game_state.attempt_spawn(DESTRUCTOR, location)
+            location = [col, 9]
+            if game_state.can_spawn(DESTRUCTOR, location):
+                game_state.attempt_spawn(DESTRUCTOR, location)
+
+        colsLeft = [3,6,9,12]
+        colsRight = [24,21,18,15]
+        colsBuild = []
+        colsRemove = []
+        if self.attack_right:
+            colsRemove = colsRight
+            colsBuild = colsLeft
+        else:
+            colsRemove = colsLeft
+            colsBuild = colsRight
+
+        for col in colsRemove:
+            for i in range(2, 4):
+                location = [col, 10 - i]
+                game_state.attempt_remove(location)
+            
+        for col in colsBuild:
+            for i in range(1, 4):
+                location = [col, 10 - i]
+                if game_state.can_spawn(DESTRUCTOR, location):
+                    game_state.attempt_spawn(DESTRUCTOR, location)
+
+        side_protections = [[2,11],[25,11],[3,10],[24,10],[4,9],[23,9]]
+        for side_protection in side_protections:
+            if game_state.can_spawn(DESTRUCTOR, side_protection):
+                game_state.attempt_spawn(DESTRUCTOR, side_protection)
+
+        
+
 
     def build_reactive_defense(self, game_state):
         """
