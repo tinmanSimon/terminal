@@ -46,8 +46,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.attack_right=True
         self.transition=False
         self.attack=False
-
-
+        self.last_enemy_health=30
+        self.did_not_hurt=False
 
     def on_turn(self, turn_state):
         """
@@ -61,15 +61,12 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
-        if game_state.turn_number%10 <=4:
-            self.attack_right=False
-        else:
-            self.attack_right=True
-
-        if game_state.turn_number%10==0 or game_state.turn_number%10==5:
+        if self.did_not_hurt:
+            self.attack_right=not self.attack_right
             self.transition=True
         else:
             self.transition=False
+        self.did_not_hurt=False
 
         if game_state.turn_number%2==0:
             self.attack=True
@@ -125,7 +122,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         initial_encrypter_locations = [[11, 5], [12, 5], [11, 4], [12, 4], [9, 7], [10, 7], [9, 6], [10, 6],
                                        [15, 5], [15, 4], [16, 5], [16, 4], [12, 8], [12, 7], [13, 8], [13, 7],
                                        [14, 8], [14, 7], [15, 8], [15, 7], [15, 5], [15, 4], [16, 5], [16, 4],
-                                       [17, 7], [17, 6], [18, 7], [18, 6]]
+                                       [17, 7], [17, 6], [18, 7], [18, 6], [13,2],[14,2]]
         game_state.attempt_spawn(ENCRYPTOR, initial_encrypter_locations)
 
 
@@ -155,6 +152,9 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         # Get breech locations
         for location in self.scored_on_locations:
+            if location[1]<6:
+                location[1]+=6
+
             # Build destructor one space above so that it doesn't block our own edge spawn locations
             self.fortify_destructor_locations.append([location[0], location[1]])
             self.fortify_filter_locations.append([location[0], location[1] + 1])
@@ -184,13 +184,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         attack_right_encryptor_locations = [[14, 3], [10, 4], [10, 5], [13, 6], [12, 6], [15, 9], [16, 9], [16, 10],
                                             [17, 10],
                                             [17, 11], [18, 11], [18, 8], [19, 8],
-                                            [19, 9], [20, 9], [20, 10], [21, 10], [14, 2], [15, 3],
-                                            [11, 2], [12, 2], [12, 1], [13, 2], [13, 1]]
+                                            [19, 9], [20, 9], [20, 10], [21, 10], [15, 3],
+                                            [11, 2], [12, 2], [12, 1], [13, 1]]
         attack_left_encryptor_locations = [[13, 3], [17, 4], [17, 5], [14, 6], [15, 6], [12, 9], [11, 9], [11, 10],
                                             [10, 10],
                                             [10, 11], [9, 11], [9, 8], [8, 8],
-                                            [8, 9], [7, 9], [7, 10], [6, 10], [13, 2], [12, 3],
-                                            [16, 2], [15, 2], [15, 1], [14, 2], [14, 1]]
+                                            [8, 9], [7, 9], [7, 10], [6, 10], [12, 3],
+                                            [16, 2], [15, 2], [15, 1], [14, 1]]
 
         # Spawn encryptors
         if self.attack_right:
@@ -294,6 +294,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         state = json.loads(turn_string)
         events = state["events"]
         breaches = events["breach"]
+        enemy_health = state["p2Stats"]
+
+        if enemy_health[0]==self.last_enemy_health:
+            self.did_not_hurt=True
+        else:
+            self.last_enemy_health=enemy_health[0]
+
         for breach in breaches:
             location = breach[0]
             unit_owner_self = True if breach[4] == 1 else False
